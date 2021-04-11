@@ -47,7 +47,7 @@ ESP8266WebServer serverWeb(80);
 //Fonctions du serveur web
 void handlerRoot(){
   String temp(reinterpret_cast<const __FlashStringHelper *>(index_html));
-  if (digitalRead(PIN_LED_VERTE)==HIGH) temp.replace("%LED%", "LED Allumée"); else temp.replace("%LED%", "LED Eteint");
+  if (digitalRead(PIN_LED_VERTE)==HIGH) temp.replace("%LED%", "LED Allumée"); else temp.replace("%LED%", "LED Eteinte");
   serverWeb.send(200, "text/html", temp);
 }
 
@@ -72,6 +72,9 @@ void setup() {
 
   // mode de connection:
   WiFi.mode(WIFI_STA);
+
+  //mode point d'accès
+  WiFi.softAP("Objet LED");
 
   //Démarrage de la connection:
   WiFi.begin(SSID, PASSWORD);
