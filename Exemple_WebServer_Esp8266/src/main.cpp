@@ -8,6 +8,29 @@ using namespace std;
 #define PIN_LED_ROUGE 5
 #define PIN_LED_VERTE 4
 
+//PageHTML
+const char index_html[] PROGMEM = R"=====(
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <title>Commande Led</title>
+    </head>
+    <body>
+        <h1>Etat de la LED</h1>
+        <h2>%LED%</h2>
+        <h1>Commande de la LED</h1>
+        <a href="/switchLedOn">
+            <button>Allumer la LED</button>
+        </a>
+        <a href="/switchLedOff">
+            <button>Eteindre la LED</button>
+        </a>
+    </body>
+</html>
+)=====";
+
+
 const char * SSID = "SFR_EAC0";
 const char * PASSWORD = "gaz_de_shciste";
 
@@ -22,18 +45,21 @@ void onGotIP(const WiFiEventStationModeGotIP& event);
 ESP8266WebServer serverWeb(80);
 
 //Fonctions du serveur web
+void handlerRoot(){
+  String temp(reinterpret_cast<const __FlashStringHelper *>(index_html));
+  if (digitalRead(PIN_LED_VERTE)==HIGH) temp.replace("%LED%", "LED Allumée"); else temp.replace("%LED%", "LED Eteint");
+  serverWeb.send(200, "text/html", temp);
+}
 
 void switchLedOn(){
   digitalWrite(PIN_LED_VERTE, HIGH);
-  serverWeb.send(200, "text/html", "Led on");
+  handlerRoot();
 }
 void switchLedOff(){
   digitalWrite(PIN_LED_VERTE, LOW);
-  serverWeb.send(200, "text/html", "Led off");
+  handlerRoot();
 }
-void handlerRoot(){
-  serverWeb.send(200, "text/html", "Page principale");
-}
+
 
 
 
@@ -56,6 +82,7 @@ void setup() {
   serverWeb.on("/switchLedOn", switchLedOn);
   serverWeb.on("/switchLedOff", switchLedOff);
   serverWeb.on("/", handlerRoot);
+  serverWeb.on("/index.html", handlerRoot);
   serverWeb.begin();
 
 
@@ -84,7 +111,6 @@ void onConnected(const WiFiEventStationModeConnected& event){
 
 
 void onGotIP(const WiFiEventStationModeGotIP& event){
-  //cout << "adresse IP : " << WiFi.localIP().toString() << endl;
   Serial.println("adresse IP : " + WiFi.localIP().toString());
   Serial.println("adresse passerelle (gateway) : " + WiFi.gatewayIP().toString());
   Serial.println("adresse DNS : " + WiFi.dnsIP().toString());
